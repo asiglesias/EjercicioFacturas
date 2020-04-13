@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Facturas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <style>
+        #content{
+            width: 50%;
+            margin-right: auto;
+            margin-left: auto;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 5%;
+            margin-bottom: 5%;
+            border: 1px solid lightgray;
+            box-shadow: 1px 1px 0px 0px lightgray;
+        }
+    </style>
+    <script>
+
+        function onAddLineaFacturaClick()
+        {
+            var concepto = document.getElementById("concepto");
+            var precioUnidad = document.getElementById("precio");
+            var numero = document.getElementById("numero");
+            var porcentajeIVA = document.getElementById("porcentaje");
+
+            if( isEmptyString(concepto.value) ||
+                isEmptyString(precioUnidad.value) ||
+                isEmptyString(numero.value) ||
+                isEmptyString(porcentajeIVA.value) ||
+                !isNumber(precioUnidad.value) ||
+                !isNumber(numero.value) ||
+                !isNumber(porcentajeIVA.value) )
+            {
+                alert("Los campos de linea de factura no pueden estar vacios y algunos son númericos.");
+                return;
+            }
+
+            var precioFinal = parseInt(numero.value, 10) * parseFloat(precioUnidad.value) * parseInt(porcentajeIVA.value, 10) / 100;
+            var hiddenValue = concepto.value + ";" + numero.value + ";" + precioUnidad.value + ";" + porcentajeIVA.value + ";" + precioFinal;
+            var node = "<tr>" +
+                       "    <td>" + concepto.value + "</td>" +
+                       "    <td>" + numero.value + "</td>" +
+                       "    <td>" + precioUnidad.value + "€</td>" +
+                       "    <td>" + porcentajeIVA.value + "%</td>" +
+                       "    <td>" + precioFinal + "€</td>" +
+                       "</tr>" +
+                       "<input type='hidden' name='lineafactura' value='"+ hiddenValue +"'/>";
+
+            var table = document.getElementById("lineafactura");
+            table.innerHTML += node;
+
+        }
+
+        function isEmptyString(value)
+        {
+            if(value.length == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        function isNumber(value)
+        {
+            if(isNaN(value))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        function validateForm()
+        {
+            var campos = ["cif", 'nombre', 'apellidos', 'email', 'direccion', 'poblacion', 'codpostal', 'pais', 'percontacto', 'telefono'];
+            var hasErrors = false;
+            campos.forEach(function(valor, indice, array){
+                var value1 = document.getElementById(valor).value;
+                var value2 = document.getElementById(valor + "2").value;
+                if(isEmptyString(value1) || isEmptyString(value2))
+                {
+                    hasErrors = true;
+                }
+            });
+            if(hasErrors)
+                alert("Asegurate de que todos los datos del emisor y del cliente están cubiertos.");
+            return !hasErrors;
+        }
+
+        $(document).ready(function(){
+            $("input").focusout(function(){
+                if(isEmptyString(this.value)){
+                    $(this).removeClass('is-valid')
+                    $(this).addClass("is-invalid");
+                }
+                else{
+                    $(this).removeClass('is-invalid')
+                    $(this).addClass("is-valid");
+                }
+            });
+        });
+    </script>
+</head>
+    <body>
+        <div id="content" class="container">
+            <form method="post" onsubmit="return validateForm()" action="/generarfactura">
+                <h3>Datos emisor</h3>
+                <hr />
+                <div class="row row-cols-3">
+                    <div class="form-group col-sm-6 col-md-3">
+                        <label for="cif">CIF</label>
+                        <input type="text" name="cif" id="cif" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-12 col-md-4">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" name="nombre" id="nombre" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-md-8">
+                        <label for="apellidos">Apellidos</label>
+                        <input type="text" name="apellidos" id="apellidos" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-12 col-md-8">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="direccion">Dirección</label>
+                        <input type="text" name="direccion" id="direccion" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <label for="poblacion">Población</label>
+                        <input type="text" name="poblacion" id="poblacion" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <label for="codpostal">Código postal</label>
+                        <input type="number" name="codpostal" id="codpostal" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="form-group col-md-3">
+                        <label for="pais">País</label>
+                        <input type="text" name="pais" id="pais" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-5">
+                        <label for="percontacto">Persona de contacto</label>
+                        <input type="text" name="percontacto" id="percontacto" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="telefono">Teléfono</label>
+                        <input type="text" name="telefono" id="telefono" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+                    <!-- Fin datos emisor factura -->
+                <h3>Datos cliente</h3>
+                <hr>
+                <div class="row">
+                    <div class="form-group col-md-3">
+                        <label for="cif2">CIF</label>
+                        <input type="text" name="cif2" id="cif2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="nombre2">Nombre</label>
+                        <input type="text" name="nombre2" id="nombre2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-8">
+                        <label for="apellidos2">Apellidos</label>
+                        <input type="text" name="apellidos2" id="apellidos2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-8">
+                        <label for="email2">Email</label>
+                        <input type="email" name="email2" id="email2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="direccion2">Dirección</label>
+                        <input type="text" name="direccion2" id="direccion2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <label for="poblacion2">Población</label>
+                        <input type="text" name="poblacion2" id="poblacion2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <label for="codpostal2">Código postal</label>
+                        <input type="number" name="codpostal2" id="codpostal2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="form-group col-md-3">
+                        <label for="pais2">País</label>
+                        <input type="text" name="pais2" id="pais2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-5">
+                        <label for="percontacto2">Persona de contacto</label>
+                        <input type="text" name="percontacto2" id="percontacto2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="telefono2">Teléfono</label>
+                        <input type="text" name="telefono2" id="telefono2" class="form-control"/>
+                        <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Líneas de factura</h3>
+                <hr>
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Numero unidades</th>
+                            <th>Precio</th>
+                            <th>Porcentaje IVA</th>
+                            <th>Importe total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineafactura">
+
+                    </tbody>
+                </table>
+                <button class="btn btn-success" style="margin: auto; margin-top: 20px; display: block;">Generar factura</button>
+            </form>
+
+            <div class="row">
+                <div class="form-group col-md-12">
+                    <label for="concepto">Concepto</label>
+                    <input type="text" name="concepto" id="concepto" class="form-control"/>
+                    <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label for="precio">Precio por unidad</label>
+                    <input type="number" name="precio" id="precio" class="form-control"/>
+                    <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label for="numero">Número de unidades</label>
+                    <input type="number" name="numero" id="numero" class="form-control"/>
+                    <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="porcentaje">Porcentaje de IVA</label>
+                    <div class="input-group">
+                        <input type="number" name="porcentaje" id="porcentaje" class="form-control" step="1"/>
+                        <div class="input-group-append">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="invalid-feedback">
+                          El campo no puede esta vacío.
+                        </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="margin: 0 auto; display: block;" onclick="onAddLineaFacturaClick()">Añadir línea de factura</button>
+
+        </div>
+    </body>
+</html>
